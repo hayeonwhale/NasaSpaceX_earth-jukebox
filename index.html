@@ -45,25 +45,74 @@ legend{padding:0 .4rem;color:var(--fg);font-size:1.03rem;font-weight:700;letter-
 fieldset>p:last-child{margin-bottom:0}
 #out{min-height:1.7em;margin:.7rem 0;font-size:1.02rem;font-weight:650;color:var(--fg)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* Integrated layout additions */
+.workspace{display:grid;grid-template-columns:minmax(0,1fr) 245px;gap:1.25rem;align-items:start}
+.workspace-main{min-width:0}
+.saved-sidebar{background:var(--card);border:1px solid var(--line);padding:.9rem;min-height:180px}
+.saved-sidebar h2{font-size:1.05rem;margin:.1rem 0 .7rem}
+.saved-map{padding:.7rem 0;border-top:1px solid var(--line);overflow-wrap:anywhere}
+.saved-map strong{display:block}
+.saved-map small{display:block;color:var(--muted);margin:.2rem 0 .45rem}
+.saved-map button{min-height:34px;padding:.3rem .55rem;font-size:.88rem}
+.saved-form input{min-width:0;flex:1;padding:.5rem;border:1px solid #999;background:var(--card);font:inherit}
+.control-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:start}
+.control-grid fieldset{margin:1rem 0}
+.gesture-table{width:100%;border-collapse:collapse;font-size:.91rem}
+.gesture-table th,.gesture-table td{text-align:left;vertical-align:top;padding:.42rem .35rem;border-top:1px solid var(--line)}
+.gesture-table th:first-child,.gesture-table td:first-child{width:34%;font-weight:650}
+.camera-row{display:flex;justify-content:flex-end;margin:.55rem 0}
+.camera-row .cam{margin:0;width:min(260px,48%)}
+#mapSaveStatus{font-size:.88rem;color:var(--muted);min-height:1.2em}
+@media(max-width:850px){.workspace{grid-template-columns:1fr}.control-grid{grid-template-columns:1fr}}
+@media(max-width:560px){body{padding:22px 16px}.camera-row .cam{width:min(230px,70%)}}
+
 </style>
 </head>
 <body>
 <header class="hero"><p class="eyebrow">Ocean, translated into sound</p><h1>Earth Jukebox</h1><p>Explore ocean temperature and currents through music. Point to a place or scan across the map.</p></header>
 
-<div class="r upload"><input type="file" id="file" class="sr" accept="image/*,video/*,.mp4"><label for="file" class="btn">Choose a map</label><button id="sample" class="primary">Use sample map</button><span id="fname"></span></div>
-<div class="w"><canvas id="c" width="960" height="480" tabindex="0" aria-label="Ocean map. Use arrow keys to explore; pitch shows temperature."></canvas><i id="line" hidden></i><i id="dot" hidden></i></div>
-<fieldset><legend>Hand control</legend>
-<div class="r"><button id="hstart" class="primary">Start hand control</button><button id="hstop">Stop camera</button><label><input type="checkbox" id="speak" checked> Speak instructions</label></div>
-<div class="cam" id="camwrap" hidden><video id="cam" autoplay muted playsinline></video><canvas id="pv" width="260" height="195"></canvas></div>
-<div class="r"><label>Gesture sensitivity <input type="range" id="gs" min="1" max="5" value="3"></label><span>Adjust if gestures trigger too slowly or easily.</span></div>
-<p>Point with one finger. Two fingers zoom in; three zoom out. Swipe four fingers to set scan direction, or hold still to hear your location. A fist starts scanning; two hands stop it. Camera stays on your device.</p>
-</fieldset>
-<video id="v" muted loop playsinline controls aria-label="Source video"></video>
-<p id="out" role="status" aria-live="polite">Choose a map or use the sample map.</p>
-<div class="r"><button id="zin">Zoom in</button><button id="zout">Zoom out</button><button id="zreset">Reset</button><span id="zl">Zoom 1.0×</span></div>
-<fieldset><legend>Explore</legend><div class="r"><button id="where">Where am I?</button><button id="scan" class="primary">Scan</button><button id="stop">Stop</button><button id="vp">Pause video</button></div><div class="r"><button id="dpitch">Temperature scale</button><button id="dstr">Current strength</button></div></fieldset>
-<fieldset><legend>Voice navigation</legend><div class="r"><button id="voiceStart">Start voice control</button><button id="voiceStop" disabled>Stop listening</button><span id="voiceStatus" role="status">Voice control is off.</span></div><p>Try “zoom in,” “scan left,” or “go to the Gulf Stream.” Microphone access is required.</p></fieldset>
-<canvas id="lg" width="480" height="58" aria-hidden="true"></canvas>
+<div class="workspace">
+  <main class="workspace-main">
+    <div class="r upload"><input type="file" id="file" class="sr" accept="image/*,video/*,.mp4"><label for="file" class="btn">Choose a map</label><button id="sample" class="primary">Use sample map</button><span id="fname"></span></div>
+    <div class="w"><canvas id="c" width="960" height="480" tabindex="0" aria-label="Ocean map. Use arrow keys to explore; pitch shows temperature."></canvas><i id="line" hidden></i><i id="dot" hidden></i></div>
+    <div class="camera-row"><div class="cam" id="camwrap" hidden><video id="cam" autoplay muted playsinline></video><canvas id="pv" width="260" height="195"></canvas></div></div>
+    <video id="v" muted loop playsinline controls aria-label="Source video"></video>
+    <canvas id="lg" width="480" height="58" aria-hidden="true"></canvas>
+    <p id="out" role="status" aria-live="polite">Choose a map or use the sample map.</p>
+    <div class="r"><button id="zin">Zoom in</button><button id="zout">Zoom out</button><button id="zreset">Reset</button><span id="zl">Zoom 1.0×</span></div>
+    <fieldset><legend>Explore</legend><div class="r"><button id="where">Where am I?</button><button id="scan" class="primary">Scan</button><button id="stop">Stop</button><button id="vp">Pause video</button></div><div class="r"><button id="dpitch">Temperature scale</button><button id="dstr">Current strength</button></div></fieldset>
+  </main>
+  <aside class="saved-sidebar" aria-label="Saved maps">
+    <h2>My saved maps ♫</h2>
+    <div class="r saved-form"><input id="mapTitle" placeholder="Map title" aria-label="Map title"><input id="mapDescription" placeholder="Description" aria-label="Map description"></div>
+    <button id="saveMap" class="primary">Save current map</button>
+    <p id="mapSaveStatus" role="status"></p>
+    <div id="savedMaps"><p>No saved maps yet.</p></div>
+  </aside>
+</div>
+
+<div class="control-grid">
+  <fieldset><legend>Hand control</legend>
+    <div class="r"><button id="hstart" class="primary">Start hand control</button><button id="hstop">Stop camera</button><label><input type="checkbox" id="speak" checked> Speak instructions</label></div>
+    <div class="r"><label>Gesture sensitivity <input type="range" id="gs" min="1" max="5" value="3"></label><span>Adjust if gestures trigger too slowly or easily.</span></div>
+    <table class="gesture-table"><thead><tr><th>Gesture</th><th>Action</th></tr></thead><tbody>
+      <tr><td>One Finger</td><td>Point at a single place and play the tune</td></tr>
+      <tr><td>Two Fingers</td><td>Zoom In</td></tr>
+      <tr><td>Three Fingers</td><td>Zoom Out</td></tr>
+      <tr><td>Four Fingers</td><td>Swipe to scan the data in the direction of the swipe</td></tr>
+      <tr><td>Five Fingers</td><td>Say where we are (point with one finger, then show five)</td></tr>
+      <tr><td>Two Fists</td><td>Stop the scan</td></tr>
+      <tr><td>Fist to the Mouth / Voice</td><td>Voice Control to direct the map to the named location</td></tr>
+    </tbody></table>
+    <p>Camera processing runs on this device. Allow camera access when prompted.</p>
+  </fieldset>
+  <fieldset><legend>Voice control</legend>
+    <div class="r"><button id="voiceStart">Start voice control</button><button id="voiceStop" disabled>Stop listening</button></div>
+    <span id="voiceStatus" role="status">Voice control is off.</span>
+    <p>Try saying “Where am I?”, “zoom in”, “scan left”, “go to the Gulf Stream”, “go to the Indian Ocean”, “stop scanning”, or “reset the map”.</p>
+  </fieldset>
+</div>
 
 <fieldset><legend>Style</legend>
 <div class="r"><label>Instrument mapping <select id="mapping"><option value="mood">Mood-based</option><option value="data">Temperature + current</option></select></label><label>Mood <select id="style"><option value="orch">Orchestra</option><option value="sad">Melancholy (Lana Del Rey mood)</option><option value="happy">Warm and hopeful (Sailor Song mood)</option></select></label><label><input type="checkbox" id="real" checked> Real instruments</label><label><input type="checkbox" id="globe" checked> Whole-world map</label></div>
@@ -359,7 +408,10 @@ function runVoiceCommand(raw){
   const s=raw.toLowerCase().replace(/[.,!?]/g,' ').replace(/\s+/g,' ').trim();
   if(!s)return;
   if(/\b(stop listening|turn off voice|voice off)\b/.test(s)){$('voiceStop').click();return}
-  if(/\b(stop scan|stop scanning)\b/.test(s)){halt();say('Scan stopped.');return}
+  if(/\b(where am i|where are we|what location am i at)\b/.test(s)){const w=where();say(w.text);speak(w.speech);return}
+  if(/\b(pause video|pause)\b/.test(s)){v.pause();say('Video paused.');return}
+  if(/\b(play video|resume video)\b/.test(s)){v.play().catch(()=>{});say('Video playing.');return}
+  if(/\b(stop scan|stop scanning|stop)\b/.test(s)){halt();say('Scan stopped.');return}
   const dir=s.match(/\b(scan|sweep)\s+(left|right|up|down)\b/);
   if(dir){setDir(dir[2],true);return}
   if(/\b(reset|whole world|reset view)\b/.test(s)){view={x:0,y:0,w:1,h:1};pL=null;draw();say('World view reset.');return}
@@ -474,7 +526,7 @@ $('where').onclick=()=>{const w=where();say(w.text);speak(w.speech)};
 $('mapping').onchange=()=>{if(src)setStyle();else $('ld').textContent='Load a map to prepare the selected instruments.'};
 
 // ---- hand control: MediaPipe Hand Landmarker runs in the browser; the camera video never leaves this computer ----
-let hl,hOn=false,hraf,gest='',gn=0,sx=null,sy=null,lastVT=-1,gh=[],fs=[false,false,false,false],lost=0,two=0,ph=[],lastSwipe=0,still=0,told=false;const cam=$('cam'),pc=$('pv'),pcx=pc.getContext('2d');
+let hl,hOn=false,hraf,gest='',gn=0,sx=null,sy=null,lastVT=-1,gh=[],fs=[false,false,false,false],lost=0,two=0,ph=[],lastSwipe=0,still=0,told=false,lastPointAt=0;const cam=$('cam'),pc=$('pv'),pcx=pc.getContext('2d');
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const need=()=>Math.round(10-1.6*(+$('gs').value)); // frames a pose must hold before it counts (slider: 1 = steadier, 5 = quicker)
 function angle(a,b,c){ // bend at joint b, in degrees (x, y scaled to the 4:3 camera, plus depth)
@@ -486,9 +538,12 @@ function rawPose(h){ // a finger is "up" when straight, "down" when bent; in bet
   const ex=160-6*(+$('gs').value),cu=ex-22;
   FJ.forEach(([m,p,t],i)=>{const a=angle(h[m],h[p],h[t]),far=dist(h[t],h[0])>dist(h[p],h[0]);if(a>ex&&far)fs[i]=true;else if(a<cu||!far)fs[i]=false});
   const[i,m,r,p]=fs;
+  const thumbOpen=dist(h[4],h[5])>dist(h[3],h[5])*1.12;
+  if(i&&m&&r&&p&&thumbOpen)return'five';
   if(i&&m&&r&&p)return'four';if(i&&m&&r)return'three';if(i&&m&&!r&&!p)return'two';if(i&&!m&&!r&&!p)return'one';if(!i&&!m&&!r&&!p)return'fist';return'other';
 }
-const LAB={one:'1 finger: point',two:'2 fingers: zoom in',three:'3 fingers: zoom out',four:'4 fingers: swipe to set scan direction',fist:'Fist: start scan',other:'(no gesture)'};
+function isFist(h){return FJ.every(([m,p,t])=>angle(h[m],h[p],h[t])<145)}
+const LAB={one:'1 finger: point',two:'2 fingers: zoom in',three:'3 fingers: zoom out',four:'4 fingers: swipe to scan',five:'5 fingers: identify location',fist:'Fist: start scan',other:'(no gesture)'};
 function speak(s){
   if(!$('speak').checked||!window.speechSynthesis)return;
   const id=++voiceId;
@@ -517,19 +572,25 @@ async function hstart(){
     cam.srcObject=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480}});await cam.play();
   }catch(e){say('Hand control could not start: '+(e.message||e)+'. It needs a camera, camera permission and internet access.');return}
   hOn=true;$('camwrap').hidden=false;sx=sy=null;hloop();
-  const m='Hand control on. One finger points at a place. Extend four fingers and swipe up, down, left or right to set the scan direction and start scanning. Hold the four fingers still to hear where you last pointed. Two fingers zoom in, three fingers zoom out. A fist starts the scan. Two hands stop it.';say(m);speak(m);
+  const m='Hand control on. One finger points and plays. Two fingers zoom in; three fingers zoom out. Swipe with four fingers to scan in that direction. Point with one finger, then show five fingers to hear the location. A fist starts scanning; two fists stop it. Use voice control to navigate to a named place.';say(m);speak(m);
 }
 function hloop(){
   if(!hOn)return;hraf=requestAnimationFrame(hloop);
   if(cam.readyState<2||cam.currentTime===lastVT)return;lastVT=cam.currentTime;
   const L=hl.detectForVideo(cam,performance.now()).landmarks;pcx.clearRect(0,0,pc.width,pc.height);
   pcx.fillStyle='#4fd1c5';L.forEach(h=>h.forEach(p=>{pcx.beginPath();pcx.arc((1-p.x)*pc.width,p.y*pc.height,3,0,7);pcx.fill()}));
-  if(L.length>=2){if(++two===4){beep(330);halt();release();say('Stopped.')}return} // two hands, steady for a moment = stop
+  if(L.length>=2){
+    if(isFist(L[0])&&isFist(L[1])){if(++two>=4){two=0;beep(330);halt();release();say('Two fists detected. Scan stopped.')}}
+    else two=0;
+    return;
+  }
   two=0;const h=L[0];
   if(!h){if(++lost>10){lost=0;gest='';gh=[];fs=[false,false,false,false];if(!run)release()}return} // brief tracking dropouts are ignored
   lost=0;gh.push(rawPose(h));if(gh.length>9)gh.shift();
   const cnt={};gh.forEach(x=>cnt[x]=(cnt[x]||0)+1);const top=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];
   let fresh=false;if(top!==gest&&cnt[top]>=need()){gest=top;gn=0;fresh=true}else gn++; // the pose changes only when it has clearly won the last few frames
+  if(fresh&&gest==='one')lastPointAt=performance.now();
+  if(fresh&&gest==='five'&&performance.now()-lastPointAt<6000&&!run){lastPointAt=0;beep(880);const w=where();say(w.text);speak(w.speech)}
   pcx.fillStyle='rgba(0,0,0,.65)';pcx.fillRect(0,pc.height-22,pc.width,22);pcx.fillStyle='#fff';pcx.font='bold 13px sans-serif';
   pcx.fillText((LAB[gest]||LAB.other)+'   '+fs.map(x=>x?'▲':'▽').join(''),6,pc.height-7);
   const now=performance.now(),fourFingers=gh.slice(-3).every(x=>x==='four');
@@ -552,6 +613,36 @@ function hloop(){
 }
 function hstop(){hOn=false;cancelAnimationFrame(hraf);if(cam.srcObject)cam.srcObject.getTracks().forEach(k=>k.stop());cam.srcObject=null;$('camwrap').hidden=true;release();say('Hand control off.')}
 $('hstart').onclick=hstart;$('hstop').onclick=hstop;$('style').onchange=setStyle;$('real').onchange=setStyle;
+
+// ---- saved maps: stores a snapshot of the visible map in this browser ----
+const SAVED_MAPS_KEY='earthJukeboxSavedMapsV1';
+function readSavedMaps(){try{return JSON.parse(localStorage.getItem(SAVED_MAPS_KEY)||'[]')}catch(_){return[]}}
+function renderSavedMaps(){
+  const host=$('savedMaps'),items=readSavedMaps();host.replaceChildren();
+  if(!items.length){const p=document.createElement('p');p.textContent='No saved maps yet.';host.appendChild(p);return}
+  items.forEach((item,index)=>{
+    const card=document.createElement('div');card.className='saved-map';
+    const title=document.createElement('strong');title.textContent='♫ '+item.title;
+    const desc=document.createElement('small');desc.textContent=item.description||'No description';
+    const open=document.createElement('button');open.type='button';open.textContent='Open';
+    open.onclick=()=>{const im=new Image();im.onload=()=>{showImg(im);$('fname').textContent=item.title};im.onerror=()=>say('This saved map could not be opened.');im.src=item.image};
+    const del=document.createElement('button');del.type='button';del.textContent='Delete';
+    del.onclick=()=>{const latest=readSavedMaps();latest.splice(index,1);localStorage.setItem(SAVED_MAPS_KEY,JSON.stringify(latest));renderSavedMaps()};
+    card.append(title,desc,open,del);host.appendChild(card);
+  });
+}
+$('saveMap').onclick=()=>{
+  if(!src){$('mapSaveStatus').textContent='Load a map before saving.';return}
+  const title=$('mapTitle').value.trim();
+  if(!title){$('mapSaveStatus').textContent='Enter a title for this map.';$('mapTitle').focus();return}
+  try{
+    const items=readSavedMaps();items.push({title,description:$('mapDescription').value.trim(),image:cv.toDataURL('image/png'),savedAt:new Date().toISOString()});
+    localStorage.setItem(SAVED_MAPS_KEY,JSON.stringify(items));renderSavedMaps();$('mapSaveStatus').textContent='Map saved in this browser.';
+    $('mapTitle').value='';$('mapDescription').value='';
+  }catch(e){$('mapSaveStatus').textContent='Could not save: browser storage may be full.'}
+};
+renderSavedMaps();
+
 </script>
 </body>
 </html>
