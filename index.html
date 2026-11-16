@@ -83,12 +83,12 @@ fieldset>p:last-child{margin-bottom:0}
     <div class="w"><canvas id="c" width="960" height="480" tabindex="0" aria-label="Ocean map. Use arrow keys to explore; pitch shows temperature."></canvas><i id="line" hidden></i><i id="dot" hidden></i></div>
     <div class="camera-row"><div class="cam" id="camwrap" hidden><video id="cam" autoplay muted playsinline></video><canvas id="pv" width="260" height="195"></canvas></div></div>
     <video id="v" muted loop playsinline controls aria-label="Source video"></video>
-    <canvas id="lg" width="480" height="58" aria-hidden="true"></canvas>
+    <canvas id="lg" width="480" height="96" aria-hidden="true"></canvas>
     <p id="out" role="status" aria-live="polite">Choose a map or use the sample map.</p>
     <div class="r"><button id="zin">Zoom in</button><button id="zout">Zoom out</button><button id="zreset">Reset</button><span id="zl">Zoom 1.0×</span></div>
     <fieldset><legend>Explore</legend><div class="r"><button id="where">Where am I?</button><button id="scan" class="primary">Scan</button><button id="stop">Stop</button><button id="vp">Pause video</button></div><div class="r"><button id="dpitch">Temperature scale</button><button id="dstr">Current strength</button></div></fieldset>
     <fieldset><legend>Boundary currents</legend>
-      <p>Western boundary currents are narrow, fast rivers of warm water on the west side of each ocean, carrying tropical heat toward the poles. Pick one and the cursor rides along it while the music reads the map: the pitch falls as the water cools, and the music grows more intense where the flow is fastest.</p>
+      <p>Western boundary currents are narrow, fast rivers of warm water on the west side of each ocean, carrying tropical heat toward the poles. Pick one and the cursor rides along it while the music reads the map: as the water cools toward the pole the pitch falls and piano takes over from brass, and the strings grow more vivid where the flow is fastest.</p>
       <div class="r"><button id="tour" class="primary">Take the tour</button><button data-wbc="gulf">Gulf Stream</button><button data-wbc="kuroshio">Kuroshio</button><button data-wbc="agulhas">Agulhas</button><button data-wbc="brazil">Brazil</button><button data-wbc="eac">East Australian</button></div>
       <div class="r"><label><input type="checkbox" id="paths" checked> Show current paths</label></div>
       <p class="note">Map and video: NASA Perpetual Ocean 2, ECCO2 ocean model, 2022 to 2023 (<a href="https://svs.gsfc.nasa.gov/5479/">SVS 5479</a>, <a href="https://svs.gsfc.nasa.gov/5425/">SVS 5425</a>). The paths are long-term averages; the real currents meander around them.</p>
@@ -125,12 +125,10 @@ fieldset>p:last-child{margin-bottom:0}
   </fieldset>
 </div>
 
-<fieldset><legend>Style</legend>
-<div class="r"><label>Instrument mapping <select id="mapping"><option value="mood">Mood-based</option><option value="data">Temperature + current</option></select></label><label>Mood <select id="style"><option value="orch">Orchestra</option><option value="sad">Melancholy (Lana Del Rey mood)</option><option value="happy">Warm and hopeful (Sailor Song mood)</option></select></label><label>Color scale <select id="layer"><option value="ecco">ECCO2 (0 to 32 °C)</option><option value="po2">Perpetual Ocean 2 (0 to 25 °C)</option></select></label><label><input type="checkbox" id="real" checked> Real instruments</label><label><input type="checkbox" id="globe" checked> Whole-world map</label></div>
-<p id="ld">Instruments load when you open a map.</p><p>Data mode: warm water plays brass, cold water piano, and currents strings.</p>
-</fieldset>
-
 <fieldset><legend>Sound settings</legend>
+<p id="soundMap"><strong>Instrument scale:</strong> Cold water → piano · Warm water → brass · Currents → strings (stronger currents create louder, more vivid string vibration).</p>
+<p id="ld" role="status">Real instrument sounds load when you open a map.</p>
+<div class="r"><label>Map color scale <select id="layer"><option value="ecco">ECCO2 sea surface temperature (0 to 32 °C)</option><option value="po2">Perpetual Ocean 2 boundary currents (0 to 25 °C)</option></select></label></div>
 <div class="r"><label>Lowest pitch (0 °C) <input type="range" id="base" min="150" max="400" value="220"></label><label>Octaves across 0 to <span class="tmx">32</span> °C <input type="range" id="oct" min="1" max="3" step="0.5" value="3"></label></div>
 <div class="r"><label>Pitch range <select id="rmode"><option value="stretch">Stretch to what is in view (easier to hear differences)</option><option value="full" id="fullopt">Full color bar, 0 to 32 °C</option></select></label></div>
 <div class="r"><label>Scan direction <select id="sdir"><option value="down">Top to bottom</option><option value="up">Bottom to top</option><option value="right">Left to right</option><option value="left">Right to left</option></select></label><label>Scan length <input type="range" id="sweep" min="4" max="20" value="8"></label><label>Current sensitivity <input type="range" id="sens" min="0.5" max="3" step="0.1" value="1"></label><label>Volume <input type="range" id="vol" min="0.02" max="0.3" step="0.01" value="0.12"></label></div>
@@ -164,7 +162,7 @@ const SW=()=>src.videoWidth||src.naturalWidth,SH=()=>src.videoHeight||src.natura
 function draw(){
   if(!src||(src===v&&v.readyState<2))return;
   cx.drawImage(src,view.x*SW(),view.y*SH(),view.w*SW(),view.h*SH(),0,0,cv.width,cv.height);
-  if($('paths').checked&&$('globe').checked)drawPaths();
+  if($('paths').checked)drawPaths();
   $('zl').textContent='Zoom '+(1/view.w).toFixed(1)+'×';
 }
 function zoomAt(fx,fy,k){
@@ -187,7 +185,7 @@ const PRESETS={
     chords:[ch(0,[0,3,7,12,14]),ch(-4,[0,4,7,11,12]),ch(3,[0,4,7,11,12]),ch(-2,[0,4,7,12,14])]},
   happy:{sec:3,wet:.3,root:48,warm:['guitar','violin','cello'],cold:['piano','flute','horn'],
     chords:[ch(0,[0,4,7,12,14]),ch(-5,[0,4,7,12]),ch(-3,[0,3,7,12]),ch(-7,[0,4,7,12,14])]}};
-let P=PRESETS.orch,ac,master,gate,mix,pan,send,vl,vg,tl,td,player=null,wafLoad=null,styled=false,on=false,last=null,activeUntil=0,chordI=0,nextChord=0,leadM=null,leadNext=0;
+let P=PRESETS.orch,ac,master,gate,mix,sb,pan,send,vl,vg,tl,td,player=null,wafLoad=null,styled=false,on=false,last=null,activeUntil=0,chordI=0,nextChord=0,leadM=null,leadNext=0;
 const INS={},ss=(a,b,x)=>{x=clamp((x-a)/(b-a),0,1);return x*x*(3-2*x)};
 const nameOf=f=>{const m=Math.round(69+12*Math.log2(f/440));return ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'][(m%12+12)%12]+(Math.floor(m/12)-1)};
 const baseMidi=()=>69+12*Math.log2($('base').value/440);
@@ -208,24 +206,29 @@ function audio(){
   if(ac){if(ac.state==='suspended')ac.resume();return}
   ac=new AudioContext();master=ac.createGain();gate=ac.createGain();gate.gain.value=0;mix=ac.createGain();pan=ac.createStereoPanner();send=ac.createGain();
   const dry=ac.createGain(),conv=ac.createConvolver(),comp=ac.createDynamicsCompressor();conv.buffer=makeIR(3.6);
+  comp.threshold.value=-20;comp.knee.value=18;comp.ratio.value=5;comp.attack.value=.008;comp.release.value=.25; // gentle glue instead of hard squashing
+  sb=ac.createGain();sb.connect(mix); // string section: the only part that vibrates with the current
   mix.connect(gate);gate.connect(pan);pan.connect(dry);pan.connect(send);dry.connect(master);send.connect(conv);conv.connect(master);master.connect(comp);comp.connect(ac.destination);
-  vl=ac.createOscillator();vg=ac.createGain();vg.gain.value=0;vl.connect(vg);vl.start();   // vibrato: wobbles pitch (in cents), depth = current strength
-  tl=ac.createOscillator();td=ac.createGain();td.gain.value=0;tl.connect(td);td.connect(mix.gain);tl.start(); // tremolo: wobbles loudness
+  vl=ac.createOscillator();vg=ac.createGain();vg.gain.value=0;vl.connect(vg);vl.start();   // vibrato: wobbles string pitch (in cents), depth = current strength
+  tl=ac.createOscillator();td=ac.createGain();td.gain.value=0;tl.connect(td);td.connect(sb.gain);tl.start(); // tremolo: wobbles string loudness
 }
-function ensure(name){if(!INS[name]){const bus=ac.createGain(),sp=ac.createStereoPanner();bus.gain.value=0;sp.pan.value=SEAT[name]||0;bus.connect(sp);sp.connect(mix);INS[name]={bus,p:null}}return INS[name]}
+function ensure(name){if(!INS[name]){const bus=ac.createGain(),sp=ac.createStereoPanner();bus.gain.value=0;sp.pan.value=SEAT[name]||0;bus.connect(sp);sp.connect(GM[name][1]==='bow'?sb:mix);INS[name]={bus,p:null}}return INS[name]}
+// comfortable range of each instrument (MIDI notes): notes are moved by octaves into it, so brass never squeals and cellos never rumble
+const RANGE={piano:[36,96],trumpet:[54,82],horn:[41,74],trombone:[40,70],violin:[55,93],viola:[48,81],cello:[36,69],strings:[36,93],guitar:[40,84],flute:[60,96]};
 function synthNote(out,type,m,t,dur,vol){ // fallback when samples are not loaded
   const f=440*2**((m-69)/12),e=ac.createGain(),lp=ac.createBiquadFilter(),end=t+dur,att={bow:.18,brass:.07,soft:.15,pluck:.005}[type],rel=.5;
   lp.type='lowpass';lp.frequency.value=Math.min(f*{bow:4,brass:5,soft:2.5,pluck:6}[type],6000);
-  (type==='bow'||type==='brass'?[-8,8,0]:[0,5]).forEach(dt=>{const o=ac.createOscillator();o.type=type==='soft'||type==='pluck'?'triangle':'sawtooth';o.frequency.value=f;o.detune.value=dt;vg.connect(o.detune);o.connect(lp);o.start(t);o.stop(end+rel+.1)});
+  (type==='bow'||type==='brass'?[-8,8,0]:[0,5]).forEach(dt=>{const o=ac.createOscillator();o.type=type==='soft'||type==='pluck'?'triangle':'sawtooth';o.frequency.value=f;o.detune.value=dt;if(type==='bow')vg.connect(o.detune);o.connect(lp);o.start(t);o.stop(end+rel+.1)});
   e.gain.setValueAtTime(0,t);e.gain.linearRampToValueAtTime(vol*.25,t+att);
   if(type==='pluck')e.gain.setTargetAtTime(0,t+att,.5);else{e.gain.setValueAtTime(vol*.25,end);e.gain.setTargetAtTime(0,end,rel/3)}
   lp.connect(e);e.connect(out);
 }
 function note(name,m,t,dur,vol){
+  const R=RANGE[name];if(R)m=fold(m,R[0],R[1]);
   const I=ensure(name),ens=GM[name][1]==='bow',jt=t+Math.random()*.03,v=vol*(.92+.16*Math.random()); // tiny timing/volume variation, like real players
   if(I.p&&player)(ens?[-.07,.07]:[0]).forEach(d=>{ // bowed strings: two slightly detuned copies = a section, not a single player
     const e=player.queueWaveTable(ac,I.bus,I.p,jt,m+d,dur,v*(ens?.75:1));
-    try{const n=e&&e.audioBufferSourceNode;if(n&&n.detune)vg.connect(n.detune)}catch(_){}});
+    try{const n=e&&e.audioBufferSourceNode;if(ens&&n&&n.detune)vg.connect(n.detune)}catch(_){}}); // only strings get vibrato; piano and brass stay in tune
   else synthNote(I.bus,GM[name][1],m,t,dur,vol);
 }
 function loadPlayer(){return wafLoad||(wafLoad=new Promise(res=>{const s=document.createElement('script');s.src='https://surikov.github.io/webaudiofont/npm/dist/WebAudioFontPlayer.js';s.onload=()=>{player=new WebAudioFontPlayer();res(true)};s.onerror=()=>res(false);document.head.appendChild(s)}))}
@@ -237,11 +240,10 @@ function loadInst(name){return new Promise(res=>{
   document.head.appendChild(s);
 })}
 async function setStyle(){
-  P=PRESETS[$('style').value];chordI=0;nextChord=0;leadM=null;audio();legend();
-  if(!$('real').checked){$('ld').textContent='Using the built-in synthesized instruments.';return}
-  $('ld').textContent='Loading real instrument sounds (a few MB, one time)...';
-  if(!await loadPlayer()){$('ld').textContent='Could not reach the instrument library; using built-in synthesized sounds.';return}
-  const names=[...new Set([...P.warm,...P.cold,...($('mapping').value==='data'?['trumpet','horn','trombone','violin','viola','cello','piano']:[])])];let ok=0;
+  P=PRESETS.orch;chordI=0;nextChord=0;leadM=null;audio();legend();
+  $('ld').textContent='Loading real piano, brass, and string sounds (a few MB, one time)...';
+  if(!await loadPlayer()){$('ld').textContent='The instrument library is unavailable; using built-in synthesized piano, brass, and string sounds.';return}
+  const names=['piano','trumpet','horn','trombone','violin','viola','cello'];let ok=0;
   await Promise.all(names.map(n=>loadInst(n).then(r=>{if(r)ok++;$('ld').textContent='Loading real instruments: '+ok+' of '+names.length})));
   $('ld').textContent=ok===names.length?'Real instrument sounds ready.':ok+' of '+names.length+' real instruments loaded; the rest use built-in sounds.';
 }
@@ -250,30 +252,25 @@ function firstLoad(){if(!styled){styled=true;setStyle()}}
 function play(a){
   audio();const t=ac.currentTime;last=a;activeUntil=t+.45;
   if(!on){on=true;nextChord=0;leadM=null}
-  const sw=ss(11,21,a.T),lw=[1,ss(.2,.5,a.str),ss(.5,.8,a.str)],sv=ss(.12,.8,a.str),rate=4+4.5*a.str;
-  master.gain.setTargetAtTime(+$('vol').value*2.5*duckF,t,.1);gate.gain.setTargetAtTime(1,t,.3);pan.pan.setTargetAtTime(a.pan,t,.2);send.gain.setTargetAtTime(P.wet,t,.5);
+  master.gain.setTargetAtTime(+$('vol').value*3.4*duckF,t,.1);gate.gain.setTargetAtTime(1,t,.3);pan.pan.setTargetAtTime(a.pan,t,.2);send.gain.setTargetAtTime(P.wet,t,.5);
   // current strength is heard three ways: more instruments, deeper vibrato (pitch wobble), and a stronger shimmer in volume
-  vg.gain.setTargetAtTime(70*sv,t,.15);td.gain.setTargetAtTime(.25*sv,t,.15);mix.gain.setTargetAtTime(1-.25*sv,t,.15);vl.frequency.setTargetAtTime(rate,t,.2);tl.frequency.setTargetAtTime(rate,t,.2);
-  if($('mapping').value==='data'){
-    // Temperature chooses the timbre: cold = piano, hot = brass. Currents are always strings.
-    const cold=1-ss(9,24,a.T),hot=ss(9,24,a.T),current=clamp(a.str,0,1);
-    ['piano','trumpet','horn','trombone','violin','viola','cello'].forEach(n=>{
-      const w=n==='piano'?cold:n==='trumpet'||n==='horn'||n==='trombone'?hot:current;
-      ensure(n).bus.gain.setTargetAtTime(w*(n==='violin'?1:n==='viola'?.72:.62),t,.28);
-    });
-    // Current strength directly drives string vibrato and tremolo depth.
-    vg.gain.setTargetAtTime(105*current,t,.12);
-    td.gain.setTargetAtTime(.42*current,t,.12);
-  }else{
-    [['warm',sw],['cold',1-sw]].forEach(([f,w])=>P[f].forEach((n,i)=>ensure(n).bus.gain.setTargetAtTime(w*lw[i],t,.4)));
-  } // temperature crossfades the selected instrument families
+  // Fixed data sonification: cold water = piano; warm water = brass; currents = bowed strings.
+  const cold=1-ss(8,24,a.T),hot=ss(8,24,a.T),current=clamp(a.str,0,1);
+  const levels={piano:cold,trumpet:hot,horn:hot*.82,trombone:hot*.58,violin:current,viola:current*.78,cello:current*.68};
+  Object.entries(levels).forEach(([n,w])=>ensure(n).bus.gain.setTargetAtTime(w,t,.22));
+  // Stronger currents produce a more audible string section and deeper, faster bow-like vibrato/tremolo,
+  // kept within what real players do (about 5 to 50 cents, 4.5 to 7 Hz) so the strings stay in tune.
+  const trem=.04+.26*current;
+  vg.gain.setTargetAtTime(6+42*current,t,.12);
+  td.gain.setTargetAtTime(trem,t,.12);sb.gain.setTargetAtTime(1-trem,t,.12);
+  vl.frequency.setTargetAtTime(4.6+2.6*current,t,.12);
+  tl.frequency.setTargetAtTime(4.6+2.6*current,t,.12);
 }
-function pads(t){ // sustained chord under the melody, in both instrument families (their volumes follow the data)
-  const tn=tones(P.chords[chordI]),d=P.sec+1;
-  ['warm','cold'].forEach(f=>{
-    [fold(tn[1],58,70),fold(tn[2],58,70)].forEach(m=>note(P[f][1],m,t,d,.4));
-    [fold(tn[0],36,48),fold(tn[2],43,55)].forEach(m=>note(P[f][2],m,t,d,.45));
-  });
+function pads(t){ // sustained piano/brass harmony with a current-driven string bed
+  const tn=tones(P.chords[chordI]),d=P.sec+1,T=last?.T??16,str=clamp(last?.str??0,0,1);
+  const cold=1-ss(8,24,T),hot=ss(8,24,T);
+  [fold(tn[1],58,70),fold(tn[2],58,70)].forEach(m=>{if(cold>.04)note('piano',m,t,d,.34*cold);if(hot>.04){note('trumpet',m,t,d,.28*hot);note('horn',m-12,t,d,.2*hot)}});
+  [fold(tn[0],43,55),fold(tn[2],48,60)].forEach(m=>{if(str>.025)note('cello',m-12,t,d,.3*str);if(str>.12)note('viola',m,t,d,.22*str)});
 }
 function music(){
   if(!ac||!on||!last)return;const t=ac.currentTime;
@@ -281,15 +278,13 @@ function music(){
   if(t>=nextChord){if(nextChord)chordI=(chordI+1)%P.chords.length;nextChord=t+P.sec;pads(t);leadM=null}
   const a=last,x=baseMidi()+$('oct').value*12*uOf(a.T),s=Math.abs(a.bend)>.6?Math.sign(a.bend):0;
   if(leadM===null||Math.abs(x-leadM)>1.5||t>=leadNext){ // melody: the chord tone nearest the temperature pitch
-    const m=nearest(tones(P.chords[chordI]),x,s),dur=1.5-1.2*a.fl;
-    if(m!==leadM||t>=leadNext){leadM=m;leadNext=t+(a.fl>.3?dur+.08:dur-.3);const sw=ss(11,21,a.T);
-      if($('mapping').value==='data'){
-        const cold=1-ss(9,24,a.T),hot=ss(9,24,a.T),strength=clamp(a.str,0,1);
+    const m=nearest(tones(P.chords[chordI]),x,s),dur=1.8-1.25*a.fl;
+    if(m!==leadM||t>=leadNext){leadM=m;leadNext=t+(a.fl>.3?dur+.08:dur-.25);
+      {
+        const cold=1-ss(8,24,a.T),hot=ss(8,24,a.T),strength=clamp(a.str,0,1);
         if(cold>.04)note('piano',m,t,dur+.3,.62*cold);
-        if(hot>.04)note('trumpet',m,t,dur+.3,.58*hot);
-        if(strength>.03){note('violin',m,t,dur+.3,.5*strength);if(strength>.45)note('cello',m-12,t,dur+.3,.35*strength)}
-      }else{
-        [['warm',sw],['cold',1-sw]].forEach(([f,w])=>{if(w>.05)note(P[f][0],m,t,dur+.3,.55+.25*a.str)});
+        if(hot>.04){note('trumpet',m,t,dur+.35,.68*hot);note('horn',m-12,t,dur+.35,.42*hot);if(hot>.55)note('trombone',m-24,t,dur+.35,.22*hot)}
+        if(strength>.025){note('violin',m,t,dur+.35,.62*strength);if(strength>.35){note('viola',m-7,t,dur+.35,.35*strength);note('cello',m-12,t,dur+.35,.42*strength)}}
       }} // steady = long overlapping notes, fluctuating = short detached notes
   }
 }
@@ -329,7 +324,7 @@ function landMask(){ // decoded once from LANDMASK
   if(LM)return LM;const b=atob(LANDMASK);LM=new Uint8Array(1440*720);let i=0,p=0,isLand=0;
   while(i<b.length){let n=0,s=0,c;do{c=b.charCodeAt(i++);n+=(c&127)*2**s;s+=7}while(c&128);if(isLand)LM.fill(1,p,p+n);p+=n;isLand^=1}
   return LM}
-const maskOn=()=>layer==='po2'&&$('globe').checked;
+const maskOn=()=>layer==='po2';
 function viewMask(){ // land mask for the visible part of the map, at analysis size
   if(!maskOn())return null;const key=[view.x,view.y,view.w,geo.x,geo.y,geo.w].join();if(key===vmKey)return vm;
   const m=landMask(),a=new Uint8Array(AW*AH),[ox,oy]=wfr(view.x,view.y),ow=view.w*geo.w,oh=view.h*geo.h;vm=new Uint8Array(AW*AH);vmKey=key;
@@ -370,10 +365,13 @@ function stats(f,p,x0,y0,x1,y1,nb,ax){ // ax 'y': blocks run along y (a vertical
   }
   return r;
 }
-const words=a=>{const sw=ss(11,21,a.T),n=1+(ss(.2,.5,a.str)>.3)+(ss(.5,.8,a.str)>.3),fam=k=>P[k].slice(0,n).join(' + '),
-  inst=sw>.97?fam('warm'):sw<.03?fam('cold'):fam('warm')+' with '+fam('cold'),
-  e=a.dx>.4?' east':a.dx<-.4?' west':'',nn=a.dy<-.4?' north':a.dy>.4?' south':'';
-  return a.T.toFixed(1)+' °C, '+inst+', '+(a.fl>.35?'detached':'smooth')+(e||nn?', flowing'+nn+e:'')};
+const words=a=>{
+  const cold=1-ss(8,24,a.T),hot=ss(8,24,a.T),current=clamp(a.str,0,1);
+  const inst=cold>hot?'piano':hot>cold?'brass':'piano + brass';
+  const strings=current<.2?'faint strings':current<.6?'moderate strings':'strong, vibrating strings';
+  const e=a.dx>.4?' east':a.dx<-.4?' west':'',nn=a.dy<-.4?' north':a.dy>.4?' south':'';
+  return a.T.toFixed(1)+' °C, '+inst+', '+strings+(a.fl>.35?', fluctuating':', smooth')+(e||nn?', flowing'+nn+e:'');
+};
 
 // ---- scan the visible map from top to bottom ----
 const DIRS={down:'top to bottom',up:'bottom to top',right:'left to right',left:'right to left'};
@@ -548,8 +546,10 @@ function legend(){
   x.clearRect(0,0,W,c.height);
   for(let i=0;i<W;i++){x.fillStyle='rgb('+G[Math.round(i/(W-1)*(G.length-1))]+')';x.fillRect(i,0,1,16)}
   x.fillStyle=getComputedStyle(document.body).color;x.font='13px sans-serif';
-  [[0,'left',P.cold[0]],[mx/2,'center','blend'],[mx,'right',P.warm[0]]].forEach(([T,al,k])=>{x.textAlign=al;x.fillText(T+' °C: '+k,T/mx*W,34)});
-  x.textAlign='left';x.fillText('Pitch runs from about '+nm(lo)+' ('+lo.toFixed(0)+' °C) up to '+nm(hi)+' ('+hi.toFixed(0)+' °C)',0,53);
+  x.textAlign='left';x.fillText('Cold water · Piano',0,34);x.textAlign='center';x.fillText('Temperature controls pitch',W/2,34);x.textAlign='right';x.fillText('Warm water · Brass',W,34);
+  x.textAlign='left';x.fillText('Pitch: '+nm(lo)+' at '+lo.toFixed(0)+' °C  →  '+nm(hi)+' at '+hi.toFixed(0)+' °C',0,52);
+  x.fillText('Current strength → string vibration:',0,73);
+  x.fillText('Calm · soft     Moderate · fuller     Strong · vivid',0,92);
 }
 $('base').oninput=$('oct').oninput=$('rmode').onchange=legend;legend();
 
@@ -574,7 +574,6 @@ const CUR=[ // name, warm/cold as drawn on that map, lat, lon, radius in degrees
 const SEAS=[['Mediterranean Sea',30,46,-6,36],['Gulf of Mexico',18,30.5,-98,-81],['Caribbean Sea',9,22,-88,-60],['Red Sea',12,28,32,44],['Arabian Sea',8,25,52,75],['Bay of Bengal',5,22,80,100],['South China Sea',0,22,105,120],['Sea of Japan',34,50,128,142],['North Sea',50,62,-4,8],['Baltic Sea',54,66,10,30]];
 const LAND=[['Greenland',60,84,-73,-12],['Antarctica',-90,-62,-180,180],['North America',15,72,-170,-52],['South America',-56,13,-82,-34],['Europe',36,72,-10,40],['Africa',-35,37,-18,52],['Australia',-45,-10,112,154],['Asia',5,77,40,180]]; // rough boxes
 function where(){
-  if(!$('globe').checked){const m='Place names need a map of the whole world.';return{text:m,speech:m}}
   const s0=pinS||{x:view.x+view.w/2,y:view.y+view.h/2},[wx,wy]=wfr(s0.x,s0.y),lon=wx*360-180,lat=90-wy*180; // the last place you pointed at
   const box=a=>lat>=a[1]&&lat<=a[2]&&lon>=a[3]&&lon<=a[4];
   const ns0=Math.abs(lat).toFixed(0)+' degrees '+(lat>=0?'north':'south'),ew0=Math.abs(lon).toFixed(0)+' degrees '+(lon>=0?'east':'west');
@@ -597,7 +596,6 @@ $('dpitch').onclick=()=>{if(src)updRange(snap(),1);const full=$('rmode').value==
   demoRun([0,1,2,3,4].map(i=>{const T=lo+(hi-lo)*i/4;return[{T,str:.3,fl:0,pan:0,bend:0},'Temperature '+T.toFixed(1)+' °C']}))};
 $('dstr').onclick=()=>demoRun([[0,'Calm current'],[.5,'Moderate current'],[1,'Strong current']].map(([s,m])=>[{T:24,str:s,fl:0,pan:0,bend:0},m]));
 $('where').onclick=()=>{const w=where();say(w.text);speak(w.speech)};
-$('mapping').onchange=()=>{if(src)setStyle();else $('ld').textContent='Load a map to prepare the selected instruments.'};
 
 // ---- western boundary currents (NASA Perpetual Ocean 2: https://svs.gsfc.nasa.gov/5425/) ----
 // Approximate long-term path of each current's core, [lat, lon], in the direction the water flows. heard: how speech recognition may spell it.
@@ -683,7 +681,7 @@ async function visit(k,id){ // fly to a current, introduce it, then ride along i
   if(!await fly(fitView(c.pts),1800,id))return false;
   await talk;return id===scanId&&follow(k,id)}
 const fits=k=>WBC[k].pts.every(p=>{const[x,y]=llxy(...p);return x>=0&&x<=1&&y>=0&&y<=1}); // a saved close-up may show only part of a current
-const ready=ks=>{if(!src){say('Load a map or a sample map first.');return false}if(!$('globe').checked){say('Tracing currents needs a map of the whole world.');return false}
+const ready=ks=>{if(!src){say('Load a map or a sample map first.');return false}
   const off=ks.find(k=>!fits(k));if(off){say('The '+WBC[off].name+' is not fully on this map. Load a whole-world map to trace it.');return false}return true};
 function claim(){halt();release();const id=++scanId;run=true;audio();$('out').setAttribute('aria-live','off');return id}
 function done(id,m){if(id!==scanId)return;silence();run=false;trace=null;cur=null;$('dot').hidden=true;draw();$('out').setAttribute('aria-live','polite');say(m);speak(m)}
@@ -698,8 +696,8 @@ function setLayer(l){ // which color bar the loaded map uses
   document.querySelectorAll('.tmx').forEach(e=>e.textContent=TMAX());$('fullopt').textContent='Full color bar, 0 to '+TMAX()+' °C';legend()}
 $('layer').onchange=()=>{setLayer($('layer').value);pL=null;hist=[];Ts=null;draw()};
 $('tour').onclick=tour;document.querySelectorAll('[data-wbc]').forEach(b=>b.onclick=()=>traceCurrent(b.dataset.wbc));
-$('paths').onchange=$('globe').onchange=()=>{vmKey='';draw()};
-(function drift(){requestAnimationFrame(drift);if(src&&src!==v&&$('paths').checked&&$('globe').checked)draw()})(); // keeps the dashes drifting on still maps (videos redraw every frame anyway)
+$('paths').onchange=()=>{vmKey='';draw()};
+(function drift(){requestAnimationFrame(drift);if(src&&src!==v&&$('paths').checked)draw()})(); // keeps the dashes drifting on still maps (videos redraw every frame anyway)
 
 // ---- hand control: MediaPipe Hand Landmarker runs in the browser; the camera video never leaves this computer ----
 let hl,hOn=false,hraf,gest='',gn=0,sx=null,sy=null,lastVT=-1,gh=[],fs=[false,false,false,false],lost=0,two=0,ph=[],lastSwipe=0,still=0,told=false,lastPointAt=0;const cam=$('cam'),pc=$('pv'),pcx=pc.getContext('2d');
@@ -789,7 +787,7 @@ function hloop(){
   else if(gest==='fist'&&gn===12&&!voiceActive){beep(660);startVoice();say('Listening. Try “go to the Gulf Stream” or “trace the Kuroshio”.')} // fist held: voice control
 }
 function hstop(){hOn=false;cancelAnimationFrame(hraf);if(cam.srcObject)cam.srcObject.getTracks().forEach(k=>k.stop());cam.srcObject=null;$('camwrap').hidden=true;release();say('Hand control off.')}
-$('hstart').onclick=hstart;$('hstop').onclick=hstop;$('style').onchange=setStyle;$('real').onchange=setStyle;
+$('hstart').onclick=hstart;$('hstop').onclick=hstop;
 
 // ---- saved maps: stores a snapshot of the visible map in this browser ----
 const SAVED_MAPS_KEY='earthJukeboxSavedMapsV1';
