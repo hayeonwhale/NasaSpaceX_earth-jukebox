@@ -5,65 +5,69 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Earth Jukebox: the ocean as an orchestra</title>
 <style>
-:root{--bg:#e8f0f2;--fg:#0a1f2c;--card:#fff;--ac:#0a6c74;--line:#8fb0b8}
-@media (prefers-color-scheme:dark){:root{--bg:#08141c;--fg:#e3f0f2;--card:#102530;--ac:#4fd1c5;--line:#2e5360}}
+:root{color-scheme:light;--bg:#f2f2f2;--fg:#111;--muted:#666;--card:#fff;--ac:#111;--line:#c9c9c9;--soft:#e8e8e8}
 *{box-sizing:border-box}
-body{margin:0 auto;max-width:980px;padding:1rem;background:var(--bg);color:var(--fg);font:17px/1.55 "Avenir Next","Segoe UI",system-ui,sans-serif}
-h1{font-size:2.1rem;margin:.2rem 0}
-ul{margin:.3rem 0 .8rem;padding-left:1.2rem}
-.w{position:relative;border:2px solid var(--line);background:#000}
+body{margin:0 auto;max-width:1280px;padding:36px 48px;background:var(--bg);color:var(--fg);font:16px/1.5 "Avenir Next","Segoe UI",Arial,sans-serif}
+h1{font-size:2.8rem;letter-spacing:-.045em;line-height:1.1;margin:.1rem 0 .55rem}
+p{margin:.4rem 0 .8rem;color:var(--muted)}
+.hero{margin:0 0 1.5rem;padding-bottom:1.2rem;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:.76rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 0 .35rem}
+.hero p:last-child{max-width:680px;font-size:1.03rem;margin:0}
+.r{display:flex;flex-wrap:wrap;gap:.7rem;align-items:center;margin:.55rem 0}
+.upload{margin:0 0 .75rem}
+.w{position:relative;overflow:hidden;border:1px solid var(--line);background:#000}
 canvas{display:block;width:100%;height:auto;cursor:crosshair}
-#lg{max-width:480px;cursor:default}
-canvas:focus-visible,button:focus-visible,input:focus-visible,.sr:focus-visible+.btn{outline:3px solid var(--ac);outline-offset:2px}
+#lg{max-width:480px;cursor:default;margin:.8rem 0}
+canvas:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,.sr:focus-visible+.btn{outline:2px solid #555;outline-offset:2px}
 #line.v{left:auto;right:auto;top:0;bottom:0;width:3px;height:auto}
-#line{position:absolute;left:0;right:0;height:3px;background:#fff;box-shadow:0 0 8px 3px var(--ac);pointer-events:none}
+#line{position:absolute;left:0;right:0;height:3px;background:#fff;box-shadow:0 0 8px 3px #888;pointer-events:none}
 #dot{position:absolute;width:14px;height:14px;margin:-7px;border:2px solid #000;box-shadow:0 0 0 2px #fff;border-radius:50%;pointer-events:none}
-#out{font-size:1.15rem;font-weight:600;min-height:2.2em}
-fieldset{border:1px solid var(--line);background:var(--card);margin:.8rem 0;padding:.5rem 1rem}
-.r{display:flex;flex-wrap:wrap;gap:.7rem;align-items:center;margin:.4rem 0}
-button,.btn{font:inherit;padding:.4rem .9rem;border:2px solid var(--ac);background:var(--card);color:var(--fg);border-radius:6px;cursor:pointer}
-button:hover,.btn:hover{background:var(--ac);color:var(--bg)}
-#v{display:none;width:100%;max-width:300px;border:2px solid var(--line);margin:.4rem 0}
+button,.btn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:.5rem .95rem;border:1px solid #999;background:var(--card);color:var(--fg);border-radius:0;font:inherit;font-weight:600;text-decoration:none;cursor:pointer;transition:background .16s ease,border-color .16s ease,transform .16s ease}
+button:hover,.btn:hover{background:var(--soft);border-color:#555}
+button:active,.btn:active{transform:translateY(1px)}
+.primary{background:#111;border-color:#111;color:#fff}
+.primary:hover{background:#333;border-color:#333;color:#fff}
+button:disabled{opacity:.5;cursor:not-allowed}
+label{color:var(--fg)}
+input,select{accent-color:#333}
+select{max-width:100%;padding:.4rem .6rem;border:1px solid #999;border-radius:0;background:var(--card);color:var(--fg);font:inherit}
+input[type=range]{vertical-align:middle}
+#fname,#zl,#voiceStatus{color:var(--muted);font-size:.92rem}
+#v{display:none;width:100%;max-width:300px;border:1px solid var(--line);border-radius:0;margin:.6rem 0}
 #v.on{display:block}
-.cam{position:relative;width:min(260px,100%);margin:.4rem 0 .8rem auto}
+.cam{position:relative;width:min(260px,100%);margin:.5rem 0 .8rem auto}
 .cam video,.cam canvas{width:100%;display:block}
-.cam video{transform:scaleX(-1);border:2px solid var(--line)}
+.cam video{transform:scaleX(-1);border:1px solid var(--line);border-radius:0}
 .cam canvas{position:absolute;inset:0}
+.cam canvas{pointer-events:none}
+fieldset{min-width:0;border:1px solid var(--line);border-radius:0;background:var(--card);margin:1rem 0;padding:.85rem 1rem 1rem;box-shadow:none}
+legend{padding:0 .4rem;color:var(--fg);font-size:1.03rem;font-weight:700;letter-spacing:.02em}
+fieldset>p:last-child{margin-bottom:0}
+#out{min-height:1.7em;margin:.7rem 0;font-size:1.02rem;font-weight:650;color:var(--fg)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 </style>
 </head>
 <body>
-<h1>Earth Jukebox</h1>
-<p>Ocean temperature and currents as sound. A scan sweeps across the map in any direction you choose and plays one note for each strip.</p>
-<ul>
-<li>Point at the map (mouse, finger, arrow keys or your hand) and keep pointing: the music follows that spot as the video changes.</li>
-<li>Temperature sets the melody pitch. Choose mood-based orchestration, or map hotter water to brass, colder water to piano, and current strength to vibrating strings.</li>
-<li>A calm current is steady and plain. A stronger current adds more instruments, a wobble in pitch (vibrato) and a shimmer in volume. A steady current plays long connected notes; a fluctuating one plays short detached notes.</li>
-<li>East and west flow moves the sound between your ears; north or south flow steps the melody up or down. Pick a mood in Style.</li>
-<li>Zoom with the mouse wheel, the buttons, or the + and - keys, and drag to move. The music then describes only the part of the map you can see.</li>
-</ul></ul>
+<header class="hero"><p class="eyebrow">Ocean, translated into sound</p><h1>Earth Jukebox</h1><p>Explore ocean temperature and currents through music. Point to a place or scan across the map.</p></header>
 
-<div class="r"><input type="file" id="file" class="sr" accept="image/*,video/*,.mp4"><label for="file" class="btn">Choose map image or mp4</label><button id="sample">Use sample map</button><span id="fname"></span></div>
-<p>You can also drop a file anywhere on this page.</p>
+<div class="r upload"><input type="file" id="file" class="sr" accept="image/*,video/*,.mp4"><label for="file" class="btn">Choose a map</label><button id="sample" class="primary">Use sample map</button><span id="fname"></span></div>
 <div class="w"><canvas id="c" width="960" height="480" tabindex="0" aria-label="Ocean map. Use arrow keys to explore; pitch shows temperature."></canvas><i id="line" hidden></i><i id="dot" hidden></i></div>
+<fieldset><legend>Hand control</legend>
+<div class="r"><button id="hstart" class="primary">Start hand control</button><button id="hstop">Stop camera</button><label><input type="checkbox" id="speak" checked> Speak instructions</label></div>
 <div class="cam" id="camwrap" hidden><video id="cam" autoplay muted playsinline></video><canvas id="pv" width="260" height="195"></canvas></div>
+<div class="r"><label>Gesture sensitivity <input type="range" id="gs" min="1" max="5" value="3"></label><span>Adjust if gestures trigger too slowly or easily.</span></div>
+<p>Point with one finger. Two fingers zoom in; three zoom out. Swipe four fingers to set scan direction, or hold still to hear your location. A fist starts scanning; two hands stop it. Camera stays on your device.</p>
+</fieldset>
 <video id="v" muted loop playsinline controls aria-label="Source video"></video>
 <p id="out" role="status" aria-live="polite">Choose a map or use the sample map.</p>
-<div class="r"><button id="zin">Zoom in</button><button id="zout">Zoom out</button><button id="zreset">Reset view</button><span id="zl">Zoom 1.0×</span></div>
-<fieldset><legend>Voice navigation</legend><div class="r"><button id="voiceStart">Start voice control</button><button id="voiceStop" disabled>Stop listening</button><span id="voiceStatus" role="status">Voice control is off.</span></div><p>Try: “zoom in”, “zoom out”, “reset view”, “go to the Gulf Stream”, “zoom in to the North Atlantic”, or “scan left”. Uses your browser’s speech recognition; microphone permission is required.</p></fieldset>
-<div class="r"><button id="where">Where am I?</button><button id="dpitch">Hear the temperature scale</button><button id="dstr">Hear current strength levels</button></div>
-<div class="r"><button id="scan">Scan</button><button id="stop">Stop</button><button id="vp">Pause video</button></div>
+<div class="r"><button id="zin">Zoom in</button><button id="zout">Zoom out</button><button id="zreset">Reset</button><span id="zl">Zoom 1.0×</span></div>
+<fieldset><legend>Explore</legend><div class="r"><button id="where">Where am I?</button><button id="scan" class="primary">Scan</button><button id="stop">Stop</button><button id="vp">Pause video</button></div><div class="r"><button id="dpitch">Temperature scale</button><button id="dstr">Current strength</button></div></fieldset>
+<fieldset><legend>Voice navigation</legend><div class="r"><button id="voiceStart">Start voice control</button><button id="voiceStop" disabled>Stop listening</button><span id="voiceStatus" role="status">Voice control is off.</span></div><p>Try “zoom in,” “scan left,” or “go to the Gulf Stream.” Microphone access is required.</p></fieldset>
 <canvas id="lg" width="480" height="58" aria-hidden="true"></canvas>
 
-<fieldset><legend>Hand control (webcam)</legend>
-<div class="r"><button id="hstart">Start hand control</button><button id="hstop">Stop camera</button><label><input type="checkbox" id="speak" checked> Speak instructions and readings</label></div>
-<div class="r"><label>Gesture sensitivity <input type="range" id="gs" min="1" max="5" value="3"></label><span>Raise it if gestures are slow to register; lower it if they trigger by accident.</span></div>
-<p>One finger points at a place and the music follows it. Extend four fingers (index, middle, ring and little finger; your thumb can be tucked). Hold them still for half a second to hear the place you last pointed at, or swipe those four fingers up, down, left or right to change the scan direction and start scanning that way. Two fingers zoom in, three fingers zoom out. A closed fist held for a moment starts the scan in the chosen direction, and showing two hands stops it. The small camera view labels the pose it sees. Camera video stays on your computer.</p>
-</fieldset>
-
 <fieldset><legend>Style</legend>
-<div class="r"><label>Instrument mapping <select id="mapping"><option value="mood">Mood-based orchestra</option><option value="data">Temperature + current orchestra</option></select></label><label>Mood <select id="style"><option value="orch">Orchestra</option><option value="sad">Melancholy (Lana Del Rey mood)</option><option value="happy">Warm and hopeful (Sailor Song mood)</option></select></label><label><input type="checkbox" id="real" checked> Real instrument sounds (needs internet)</label><label><input type="checkbox" id="globe" checked> Map shows the whole world (needed for place names)</label></div>
-<p id="ld">Instruments load when you open a map.</p><p>In Temperature + current mode: hotter water plays brass, colder water plays piano, and currents play strings. Current strength controls string vibration, tremolo, and volume.</p>
+<div class="r"><label>Instrument mapping <select id="mapping"><option value="mood">Mood-based</option><option value="data">Temperature + current</option></select></label><label>Mood <select id="style"><option value="orch">Orchestra</option><option value="sad">Melancholy (Lana Del Rey mood)</option><option value="happy">Warm and hopeful (Sailor Song mood)</option></select></label><label><input type="checkbox" id="real" checked> Real instruments</label><label><input type="checkbox" id="globe" checked> Whole-world map</label></div>
+<p id="ld">Instruments load when you open a map.</p><p>Data mode: warm water plays brass, cold water piano, and currents strings.</p>
 </fieldset>
 
 <fieldset><legend>Sound settings</legend>
@@ -79,7 +83,7 @@ const LUT0=[[52,95,248],[51,102,243],[51,112,236],[51,119,231],[50,126,226],[50,
 const LUT=LUT0.map(c=>{const m=Math.max(...c)||1;return c.map(x=>x*255/m)});
 const AW=288,AH=144,NB=48,BH=3,an=document.createElement('canvas');an.width=AW;an.height=AH;
 const anx=an.getContext('2d',{willReadFrequently:true});
-let src=null,run=false,raf,cur=null,Dh=null,Ts=null,pL=null,hist=[],lastSay=0,drag=null,scanId=0,landHit=false,duckF=1,pinS=null,rt=0,ref=.3,lastR=null,twoHands=false,rg={lo:0,hi:32},view={x:0,y:0,w:1,h:1};
+let src=null,run=false,raf,cur=null,Dh=null,Ts=null,pL=null,hist=[],lastSay=0,drag=null,scanId=0,landHit=false,duckF=1,pinS=null,rt=0,ref=.3,lastR=null,twoHands=false,rg={lo:0,hi:32},view={x:0,y:0,w:1,h:1},voiceTimer=null,voiceId=0;
 const say=t=>$('out').textContent=t,clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const SW=()=>src.videoWidth||src.naturalWidth,SH=()=>src.videoHeight||src.naturalHeight;
 
@@ -486,9 +490,22 @@ function rawPose(h){ // a finger is "up" when straight, "down" when bent; in bet
 }
 const LAB={one:'1 finger: point',two:'2 fingers: zoom in',three:'3 fingers: zoom out',four:'4 fingers: swipe to set scan direction',fist:'Fist: start scan',other:'(no gesture)'};
 function speak(s){
-  if(!$('speak').checked||!window.speechSynthesis)return;speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(s),end=()=>{duckF=1};u.onstart=()=>{duckF=.25};u.onend=end;u.onerror=end;setTimeout(end,s.length*90+2000); // music gets quieter while speaking
-  speechSynthesis.speak(u);
+  if(!$('speak').checked||!window.speechSynthesis)return;
+  const id=++voiceId;
+  clearTimeout(voiceTimer);speechSynthesis.cancel();
+  const sentences=s.split(/(?<=[.!?])\s+/).map(x=>x.trim()).filter(Boolean);
+  let i=0;duckF=.25;
+  const finish=()=>{if(id!==voiceId)return;clearTimeout(voiceTimer);voiceTimer=null;duckF=1};
+  const next=()=>{
+    if(id!==voiceId)return;
+    if(i===sentences.length)return finish();
+    const text=sentences[i++],u=new SpeechSynthesisUtterance(text);
+    voiceTimer=setTimeout(finish,Math.max(4000,text.length*120+2500));
+    u.onstart=()=>{if(id===voiceId)duckF=.25};
+    u.onend=()=>{if(id===voiceId){clearTimeout(voiceTimer);voiceTimer=setTimeout(next,450)}};
+    u.onerror=finish;speechSynthesis.speak(u);
+  };
+  next();
 }
 async function hstart(){
   if(hOn)return;if(!src){say('Load a map or the sample map first.');return}
